@@ -6,24 +6,23 @@ class Cell {
     this._piece = null;
 
     this._td.addEventListener("click", () => {
-      switch (active) {
-        case this:
-          this.deactivate();
-          this.piece.removeMoves();
-          active = null;
-          break;
-        case null:
-          this.activate();
-          active = this;
-          this.piece.displayMoves();
-          break;
-        default:
-          active.deactivate();
-          active.piece.removeMoves();
-          this.activate();
-          active = this;
-          this.piece.displayMoves();
-          break;
+      // this cell is empty
+      // active cell is this cell
+      // active cell is not this cell
+      // there is no active cell
+
+      //this cell is occupied
+      // active cell is this cell
+      // active cell is not this cell
+      // there is no active cell
+
+      if (active === this) {
+        active = null;
+        this.deactivate();
+      } else {
+        if (active) active.deactivate();
+        active = this;
+        this.activate();
       }
     });
   }
@@ -80,11 +79,12 @@ class Cell {
 
   activate() {
     this.td.classList.add("cell--active");
-    this.piece.displayMoves();
+    if (this.isOccupied()) this.piece.displayMoves();
   }
 
   deactivate() {
     this.td.classList.remove("cell--active");
+    if (this.isOccupied()) this.piece.removeMoves();
   }
 
   showMove() {

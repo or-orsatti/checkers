@@ -37,6 +37,10 @@ class Piece {
     return this._moves;
   }
 
+  /**
+   *@function calcMoves calculates the possible moves of a piece.
+   * @returns an array of the possible moves;
+   */
   calcMoves() {
     const relativeMoves = this.getRelativeMoves();
     const moves = [];
@@ -44,40 +48,54 @@ class Piece {
       let cellNumber = null;
       try {
         cellNumber = Cell.getLocation(relativeMove.row, relativeMove.col);
-      } catch (e) {
-        console.log(e);
-      }
+      } catch (e) {}
       if (cellNumber === null) continue;
       moves.push(cellsList[cellNumber]);
     }
     return moves;
   }
-
+  /**
+   * @function displayMoves calculates the possible moves
+   * and display the styles.
+   */
   displayMoves() {
     this._moves = [...this.calcMoves()];
     this._moves.forEach((move) => {
       move.showMove();
     });
   }
-
+  /**
+   * @function removeMoves calculates the possible moves
+   * and removes the styles.
+   */
   removeMoves() {
     this._moves = [...this.calcMoves()];
     this._moves.forEach((move) => {
       move.removeMove();
     });
   }
-
+  /**
+   * @function getRelativeMoves return all the possible moves relative to the currect location
+   * @returns {Array<>} all possible relative moves
+   */
   getRelativeMoves() {
-    let direction = 1;
+    let rowDirection = 1;
+    let colDirection = 1;
     if (this.color === BLACK) {
-      direction = -1;
+      //flip the calc
+      rowDirection = -1;
+    }
+
+    if (this._cell.row % 2 !== 0) {
+      // bacause im calulating based only on the black cells
+      colDirection = -1;
     }
 
     return [
-      { row: this._cell.row + direction, col: this._cell.col },
+      { row: this._cell.row + rowDirection, col: this._cell.col },
       {
-        row: this._cell.row + direction,
-        col: this._cell.col + (this._cell.col % 2),
+        row: this._cell.row + rowDirection,
+        col: this._cell.col + colDirection,
       },
     ];
   }
