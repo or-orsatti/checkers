@@ -1,110 +1,115 @@
 class Cell {
-  constructor(row, col, td) {
-    this.row = row;
-    this.col = Math.floor(col / 2);
-    this._td = td;
-    this._piece = null;
+    constructor(row, col, td) {
+        this._row = row;
+        this._col = col;
+        this._td = td;
+        this._piece = null;
 
-    this._td.addEventListener("click", () => {
-      // this cell is empty
-      // active cell is this cell
-      // active cell is not this cell
-      // there is no active cell
+        this._td.addEventListener("click", () => {
+            if (!gm.active) this.firstClick();
+            else this.secondClick();
+        });
+    }
 
-      //this cell is occupied
-      // active cell is this cell
-      // active cell is not this cell
-      // there is no active cell
+    firstClick() {
+        if (this.isEmpty()) return;
+        if (this.piece.color !== gm.turnColor) return;
+        gm.active = this;
+    }
 
-      if (active === this) {
-        active = null;
-        this.deactivate();
-      } else {
-        if (active) active.deactivate();
-        active = this;
-        this.activate();
-      }
-    });
-  }
+    secondClick() {
+        if (this === gm.active) gm.removeActive();
+        else if (gm.active.isOpponment(this)) {
+            gm.removeActive();
+        } else if (this.isOccupied()) {
+            gm.removeActive();
+            gm.active = this;
+        } else {
+            if (gm.active.piece.tryMove(this)) gm.changeTurn();
+            gm.removeActive();
+        }
+    }
 
-  get row() {
-    return this._row;
-  }
+    get row() {
+        return this._row;
+    }
 
-  set row(newRow) {
-    if (newRow > 7 || newRow < 0) throw "illegal value for col";
-    this._row = newRow;
-  }
+    get col() {
+        return this._col;
+    }
 
-  get col() {
-    return this._col;
-  }
+    get td() {
+        return this._td;
+    }
 
-  set col(newCol) {
-    if (newCol > 3 || newCol < 0) throw "illegal value for col";
-    this._col = newCol;
-  }
+    set td(img) {
+        if (img === null) throw "illegal img. use setEmpty to put null.";
+        this._td.appendChild(img);
+    }
 
-  get td() {
-    return this._td;
-  }
+    set piece(newPiece) {
+        if (newPiece === null) throw "illegal piece";
+        this.td = newPiece.img;
+        this._piece = newPiece;
+        this._piece.row = this.row;
+        this._piece.col = this.col;
+    }
 
-  set td(img) {
-    if (img === null) throw "illegal img. use setEmpty to put null.";
-    this._td.appendChild(img);
-  }
+    get piece() {
+        return this._piece;
+    }
 
-  set piece(newPiece) {
-    if (newPiece === null) throw "illegal piece";
-    this.td = newPiece.img;
-    this._piece = newPiece;
-  }
+    setEmpty() {
+        this.td.innerHTML = "";
+        const p = this._piece;
+        this._piece = null;
+        return p;
+    }
 
-  get piece() {
-    return this._piece;
-  }
+    isEmpty() {
+        return this.td.innerHTML === "";
+    }
 
-  setEmpty() {
-    this.td.innerHTML = "";
-    this._piece = null;
-  }
+    isOccupied() {
+        return this.td.innerHTML !== "";
+    }
 
-  isEmpty() {
-    return this.td.innerHTML === "";
-  }
+    isOpponment(cell) {
+        return (
+            this.isOccupied() &&
+            cell.isOccupied() &&
+            this.piece.color !== cell.piece.color
+        );
+    }
 
-  isOccupied() {
-    return this.td.innerHTML !== "";
-  }
+    activate() {
+        this.td.classList.add("cell--active");
+        if (this.isOccupied()) this.piece.displayMoves();
+    }
 
-  activate() {
-    this.td.classList.add("cell--active");
-    if (this.isOccupied()) this.piece.displayMoves();
-  }
+    deactivate() {
+        this.td.classList.remove("cell--active");
+        if (this.isOccupied()) this.piece.removeMoves();
+    }
 
-  deactivate() {
-    this.td.classList.remove("cell--active");
-    if (this.isOccupied()) this.piece.removeMoves();
-  }
+    showMove() {
+        this.td.classList.add("cell--move");
+    }
 
-  showMove() {
-    this.td.classList.add("cell--move");
-  }
+    removeMove() {
+        this.td.classList.remove("cell--move");
+    }
 
-  removeMove() {
-    this.td.classList.remove("cell--move");
-  }
+    /**
+     * @function getLocation return the location in a 1d array based on the row and colunm
+     * @param {Integer} row
+     * @param {Integer} col
+     * @returns location based on the row and coumn
+     */
+    static getLocation(row, col) {
+        if (col < 0 || col > 7) return false;
+        if (row < 0 || row > 7) return false;
 
-  /**
-   * @function getLocation return the location in a 1d array based on the row and colunm
-   * @param {Integer} row
-   * @param {Integer} col
-   * @returns location based on the row and coumn
-   */
-  static getLocation(row, col) {
-    if (col < 0 || col > 3) throw ("illegal value for col: ", col);
-    if (row < 0 || row > 7) throw ("illegal value for row: ", row);
-
-    return row * 4 + col;
-  }
+        return row * 4 + Math.floor(col / 2);
+    }
 }
