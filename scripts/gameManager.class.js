@@ -4,6 +4,10 @@ class GameManager {
         this._pieces = this.initPieces();
         this.turnColor = WHITE;
         this._active = null;
+        this.modal = new Modal("", "restart");
+        this.modal.btn.addEventListener("click", () => {
+            this._pieces = this.initPieces();
+        });
     }
 
     get cells() {
@@ -32,6 +36,30 @@ class GameManager {
 
     changeTurn() {
         this.turnColor = this.turnColor === WHITE ? BLACK : WHITE;
+        if (this.checkWinCondition()) {
+            this.modal.text = `${this.turnColor} has lost!`;
+            this.modal.display();
+        }
+    }
+
+    checkWinCondition() {
+        const sameColoredPieces = this.turnPiecesList;
+        const livePiece = sameColoredPieces.find((piece) => piece.alive);
+        if (!livePiece) return true;
+
+        if (
+            sameColoredPieces.find(
+                (piece) => piece.alive && piece !== livePiece
+            )
+        )
+            return false;
+
+        if (!this.checkIfHaveMoves(livePiece)) return true;
+        return false;
+    }
+
+    checkIfHaveMoves(piece) {
+        return piece.calcMoves().length !== 0;
     }
 
     get turnPiecesList() {

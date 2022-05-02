@@ -7,10 +7,15 @@ class Piece {
         this._img.classList.add("piece");
         this._color = color;
         this._moves = [];
+        this._alive = true;
     }
 
     get cell() {
         return gm._cells[Cell.getLocation(this._row, this._col)];
+    }
+
+    get alive() {
+        return this._alive;
     }
 
     get row() {
@@ -48,6 +53,7 @@ class Piece {
         this.cell.setEmpty();
         this._row = -1;
         this._col = -1;
+        this._alive = false;
     }
 
     get direction() {
@@ -86,25 +92,37 @@ class Piece {
             move.cell.removeMove();
         });
     }
-
+    /**
+     *function that calculate the next move of a piece.
+     * @param {int} row x coordinate
+     * @param {int} col y coordinate
+     * @param {int} colDirection left or right (1,-1)
+     * @param {Piece} piece if theres a piece between (for the recursion)
+     * @returns an object containing the destination and the captured piece.
+     */
     checkInDirection(row, col, colDirection, piece = null) {
         row = row + this.direction;
         col = col + colDirection;
 
         const cellLocation = Cell.getLocation(row, col);
         const cell = gm.cells[cellLocation];
-        if (!Cell.getLocation(row, col)) return null;
+        if (Cell.getLocation(row, col) === false) return null;
         if (cell.isOpponment(this.cell))
             return this.checkInDirection(row, col, colDirection, cell.piece);
         if (cell.isOccupied()) return null;
         return { cell: cell, captured: piece };
     }
-
+    /**
+     * @function tryMove tries to move a piece to a new cell.
+     * @param {Cell} destination cell to move to
+     * @returns true if a move was a success, else false.
+     */
     tryMove(destination) {
         console.log("moving to ", destination);
         const move = this.moves.find((move) => destination === move.cell);
         if (move) {
             if (move.captured) move.captured.kill();
+            this.cell.setEmpty();
             this.removeMoves();
             destination.piece = this;
             return true;

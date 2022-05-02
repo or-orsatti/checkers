@@ -4,7 +4,6 @@ const ROW_CLASS = "row",
     BOARD_SIZE = 8,
     WHITE = "white",
     BLACK = "black";
-
 const gm = new GameManager();
 
 // cellsList[18].piece = pieces[10];
