@@ -7,6 +7,7 @@ class GameManager {
         this.modal = new Modal("", "restart");
         this.modal.btn.addEventListener("click", () => {
             gm.removeGame();
+            const bodyEl = document.body;
             this._cells = this.initGame();
             this._pieces = this.initPieces();
             bodyEl.classList.remove("bg--dark");
