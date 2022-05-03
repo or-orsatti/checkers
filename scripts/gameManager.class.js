@@ -9,6 +9,7 @@ class GameManager {
             gm.removeGame();
             this._cells = this.initGame();
             this._pieces = this.initPieces();
+            bodyEl.classList.remove("bg--dark");
             this.turnColor = WHITE;
         });
     }
@@ -42,7 +43,9 @@ class GameManager {
         const bodyEl = document.querySelector("body");
         bodyEl.classList.toggle("bg--dark");
         if (this.checkIfColorLost()) {
-            this.modal.text = `${this.turnColor} has lost!`;
+            this.modal.text = `${
+                this.turnColor === WHITE ? BLACK : WHITE
+            } has won!`;
             this.modal.display();
         }
     }
