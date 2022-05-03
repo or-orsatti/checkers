@@ -6,18 +6,24 @@ class Cell {
         this._piece = null;
 
         this._td.addEventListener("click", () => {
-            if (!gm.active) this.firstClick();
-            else this.secondClick();
+            if (!gm.active) this.activateCell();
+            else this.takeAction();
         });
     }
-
-    firstClick() {
+    /**
+     * @function activateCell() - doing the first click on the board.
+     * when nothing is activated yet.
+     */
+    activateCell() {
         if (this.isEmpty()) return;
         if (this.piece.color !== gm.turnColor) return;
         gm.active = this;
     }
-
-    secondClick() {
+    /**
+     * @function takeAction() - after the first click, user can take action by moving.
+     * this function handles that.
+     */
+    takeAction() {
         if (this === gm.active) gm.removeActive();
         else if (gm.active.isOpponment(this)) {
             gm.removeActive();
@@ -25,8 +31,10 @@ class Cell {
             gm.removeActive();
             gm.active = this;
         } else {
-            if (gm.active.piece.tryMove(this)) gm.changeTurn();
+            let action = gm.active.piece.tryMove(this);
+            if (action === 0) return; // illegal move.
             gm.removeActive();
+            gm.changeTurn();
         }
     }
 

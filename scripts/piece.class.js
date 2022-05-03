@@ -69,7 +69,10 @@ class Piece {
         let moves = [];
         moves.push(this.checkInDirection(this.row, this.col, -1));
         moves.push(this.checkInDirection(this.row, this.col, 1));
+
         moves = moves.filter((move) => move !== null);
+
+        if (this.checkForJumps(moves)) moves = this.filterJumps(moves);
         return moves;
     }
     /**
@@ -93,6 +96,23 @@ class Piece {
         });
     }
     /**
+     *  @function checkForJumps checks if a piece has  capture/jump move
+     * @param {Array<Cell>} moves - default is the moves of the player
+     * @returns if there is a capture/jump move -true, else - false;
+     */
+    checkForJumps(moves = this._moves) {
+        return moves.find((move) => move.captured !== null) ? true : false;
+    }
+
+    /**
+     *  @function filterJumps return only the moves with jumps/captures
+     * @param {Array<Cell>} moves - default is the moves of the player
+     * @returns {Array<Cell>} the new array of moves
+     */
+    filterJumps(moves = this._moves) {
+        return moves.filter((move) => move.captured !== null);
+    }
+    /**
      *function that calculate the next move of a piece.
      * @param {int} row x coordinate
      * @param {int} col y coordinate
@@ -100,33 +120,50 @@ class Piece {
      * @param {Piece} piece if theres a piece between (for the recursion)
      * @returns an object containing the destination and the captured piece.
      */
-    checkInDirection(row, col, colDirection, piece = null) {
-        row = row + this.direction;
+    checkInDirection(
+        row,
+        col,
+        colDirection,
+        rowDirection = this.direction,
+        piece = null
+    ) {
+        row = row + rowDirection;
         col = col + colDirection;
-
         const cellLocation = Cell.getLocation(row, col);
         const cell = gm.cells[cellLocation];
-        if (Cell.getLocation(row, col) === false) return null;
-        if (cell.isOpponment(this.cell))
-            return this.checkInDirection(row, col, colDirection, cell.piece);
-        if (cell.isOccupied()) return null;
-        return { cell: cell, captured: piece };
+
+        if (Cell.getLocation(row, col) === false) return null; // if location doesnt exist (should not occur)
+        if (cell.isOpponment(this.cell) && !piece)
+            // if theres a player in the checked cell, call this function again with the cell after it
+            return this.checkInDirection(
+                row,
+                col,
+                colDirection,
+                rowDirection,
+                cell.piece
+            );
+        if (cell.isOccupied()) return null; //if team member is in the cell
+        return { cell: cell, captured: piece }; //if no if has activated, return the cell and the piece (if it can eat)
     }
+
     /**
      * @function tryMove tries to move a piece to a new cell.
      * @param {Cell} destination cell to move to
-     * @returns true if a move was a success, else false.
+     * @returns 1 or 2 if a move was a success, else 0.
      */
     tryMove(destination) {
-        console.log("moving to ", destination);
+        let type = 0;
         const move = this.moves.find((move) => destination === move.cell);
         if (move) {
-            if (move.captured) move.captured.kill();
             this.cell.setEmpty();
-            this.removeMoves();
             destination.piece = this;
-            return true;
+            this.removeMoves();
+            type++;
+            if (move.captured) {
+                move.captured.kill();
+                type++;
+            }
         }
-        return false;
+        return type;
     }
 }
